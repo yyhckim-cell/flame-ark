@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FLAME-ARK</title>
+<style>
+  :root{
+    --ink:#12141a;
+    --sub:#6b7280;
+    --line:#e5e7eb;
+    --bg:#ffffff;
+    --panel:#f4f6fb;
+    --tint:#e8f8fb;
+    --tint-line:#bfe9f0;
+    --blue:#2f5fe0;
+    --blue-dark:#13245c;
+    --sans:-apple-system,BlinkMacSystemFont,"Malgun Gothic","Apple SD Gothic Neo","Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--sans); color:var(--ink); background:var(--bg);
+    line-height:1.7; -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit; text-decoration:none;}
+  button{font-family:var(--sans);}
+
+  /* ---- 헤더 ---- */
+  header.nav{position:sticky; top:0; z-index:20; background:#fff; border-bottom:1px solid var(--line);}
+  .nav-inner{max-width:1120px; margin:0 auto; padding:16px 28px 6px; display:flex; justify-content:space-between; align-items:center;}
+  .brand{display:flex; align-items:center; gap:8px; font-weight:800; font-size:17px; letter-spacing:-0.01em;}
+  .brand svg{width:20px; height:20px; flex:none;}
+  .nav-tagline{max-width:1120px; margin:0 auto; padding:0 28px 12px; font-size:11.5px; color:var(--sub);}
+  nav.menu{display:flex; align-items:center; gap:24px; font-size:13.5px; font-weight:600; flex-wrap:nowrap;}
+  nav.menu a{color:var(--sub); white-space:nowrap; transition:color .15s;}
+  nav.menu a:hover{color:var(--ink);}
+  nav.menu a.lang-link{background:var(--blue-dark); color:#fff; padding:7px 15px; border-radius:999px; font-weight:700; font-size:12px;}
+  nav.menu a.lang-link:hover{background:var(--ink);}
+
+  /* ---- 공통 ---- */
+  .wrap{max-width:1120px; margin:0 auto; padding:100px 28px;}
+  .wrap + .wrap{border-top:1px solid var(--line);}
+  .eyebrow{display:flex; align-items:center; gap:10px; font-size:12px; letter-spacing:0.12em; color:var(--blue); font-weight:700; margin-bottom:18px; text-transform:uppercase;}
+  .eyebrow .dash{width:24px; height:2px; background:var(--blue); flex:none;}
+  h2.h{font-size:30px; font-weight:800; line-height:1.4; letter-spacing:-0.01em; margin:0 0 30px;}
+  hr.div{border:none; border-top:1px solid var(--line); margin:0 0 44px;}
+  .btn{display:inline-block; padding:13px 26px; border-radius:999px; font-size:13.5px; font-weight:700; cursor:pointer; border:none;}
+  .btn-primary{background:var(--blue); color:#fff;}
+  .btn-primary:hover{background:#4570ea;}
+  .btn-outline{border:1px solid var(--line); color:var(--ink); background:none;}
+  .btn-outline:hover{border-color:var(--ink);}
+
+  /* ---- 히어로 ---- */
+  .hero{
+    position:relative; overflow:hidden; color:#fff; padding:88px 28px 0;
+    background:
+      radial-gradient(600px 400px at 85% 10%, rgba(60,100,220,0.35), transparent 60%),
+      radial-gradient(500px 400px at 10% 90%, rgba(50,80,180,0.25), transparent 60%),
+      linear-gradient(150deg,#0c1322 0%, #16233f 55%, #101c33 100%);
+  }
+  .hero-inner{max-width:1120px; margin:0 auto; position:relative; z-index:1; padding-bottom:64px;}
+  .hero-eyebrow{display:flex; align-items:center; gap:10px; font-size:12px; letter-spacing:0.14em; color:#8fb0ff; font-weight:700; margin-bottom:26px; text-transform:uppercase;}
+  .hero-eyebrow .dash{width:28px; height:2px; background:#8fb0ff;}
+  h1.hero-title{font-size:42px; font-weight:800; line-height:1.4; letter-spacing:-0.02em; margin:0 0 26px; max-width:820px;}
+  h1.hero-title .hl{color:#6f96ff;}
+  p.hero-lead{font-size:16px; color:rgba(255,255,255,0.72); max-width:600px; margin:0 0 40px; line-height:1.85;}
+  .hero-cta{display:flex; gap:14px; margin-bottom:56px; flex-wrap:wrap;}
+  .hero-cta .btn-outline{border-color:rgba(255,255,255,0.35); color:#fff;}
+  .hero-cta .btn-outline:hover{border-color:#fff;}
+  .hero-foot{
+    display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap;
+    border-top:1px solid rgba(255,255,255,0.15); padding:22px 0; font-size:12.5px; color:rgba(255,255,255,0.55);
+  }
+  .hero-foot .explore{letter-spacing:0.1em; font-weight:700; color:rgba(255,255,255,0.8); font-size:11.5px;}
+
+  /* ---- WHY 섹션 ---- */
+  .why-grid{display:flex; gap:60px; justify-content:space-between; flex-wrap:wrap; margin-bottom:50px;}
+  .why-grid h2{font-size:30px; font-weight:800; line-height:1.45; letter-spacing:-0.01em; flex:1 1 440px; margin:0;}
+  .why-grid p{flex:1 1 360px; font-size:14.5px; color:var(--sub); line-height:1.9; margin:6px 0 0;}
+  .trio{display:grid; grid-template-columns:repeat(3,1fr); gap:36px;}
+  .trio-item .t-cat{font-size:11px; letter-spacing:0.1em; color:var(--blue); font-weight:700; margin-bottom:10px; text-transform:uppercase;}
+  .trio-item .t-title{font-size:17px; font-weight:800; margin-bottom:8px;}
+  .trio-item .t-desc{font-size:13px; color:var(--sub); line-height:1.75;}
+
+  .stat-grid{display:flex; flex-wrap:wrap; border-top:1px solid var(--ink); margin-top:56px;}
+  .stat{flex:1 1 200px; padding:20px 20px 0 0; border-right:1px solid var(--line);}
+  .stat:last-child{border-right:none;}
+  .stat .num{font-weight:800; font-size:25px; color:var(--blue);}
+  .stat .lbl{font-size:12px; color:var(--sub); margin-top:6px;}
+
+  /* ---- 플랫폼 카드 ---- */
+  .plat-head{display:flex; justify-content:space-between; align-items:flex-end; gap:40px; flex-wrap:wrap; margin-bottom:40px;}
+  .plat-head h2{font-size:26px; font-weight:800; line-height:1.45; max-width:640px; margin:0;}
+  .plat-head p{font-size:13.5px; color:var(--sub); max-width:340px; margin:0; line-height:1.85;}
+  .plat-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:14px;}
+  .plat-card{border:1px solid var(--line); border-radius:6px; padding:24px 18px; font-size:13px;}
+  .plat-card.core{background:var(--blue); border-color:var(--blue); color:#fff;}
+  .plat-card .p-tag{font-size:10.5px; letter-spacing:0.08em; font-weight:700; margin-bottom:14px; text-transform:uppercase;}
+  .plat-card.core .p-tag{color:#cfe0ff;}
+  .plat-card:not(.core) .p-tag{color:var(--blue);}
+  .plat-card .p-title{font-size:14px; font-weight:800; line-height:1.4; margin-bottom:8px;}
+  .plat-card .p-org{font-size:11.5px; margin-bottom:10px;}
+  .plat-card.core .p-org{color:rgba(255,255,255,0.75);}
+  .plat-card:not(.core) .p-org{color:var(--sub);}
+  .plat-card .p-desc{font-size:12px; line-height:1.65;}
+  .plat-card.core .p-desc{color:rgba(255,255,255,0.85);}
+  .plat-card:not(.core) .p-desc{color:var(--sub);}
+
+  /* ---- PI ---- */
+  .pi-block{display:flex; gap:52px; align-items:flex-start;}
+  .pi-photo{
+    width:168px; height:210px; flex:none; background:var(--panel); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--sub);
+    text-align:center; padding:12px; line-height:1.6;
+  }
+  .pi-text .name{font-size:22px; font-weight:800; margin-bottom:4px;}
+  .pi-text .role{font-size:12.5px; color:var(--sub); margin-bottom:24px;}
+  .pi-text p{margin:0 0 18px; font-size:15px; color:#2a2c33;}
+
+  /* ---- 참여 축 3컬럼 ---- */
+  .axis-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:0; border-top:1px solid var(--line); margin-top:36px;}
+  .axis-item{padding:28px 24px 0 0; border-right:1px solid var(--line);}
+  .axis-item:last-child{border-right:none;}
+  .axis-item .a-bar{width:3px; height:16px; background:var(--blue); margin-bottom:10px;}
+  .axis-item .a-cat{font-size:11px; color:var(--sub); font-weight:700; margin-bottom:10px;}
+  .axis-item .a-title{font-size:19px; font-weight:800; margin-bottom:8px;}
+  .axis-item .a-desc{font-size:12.5px; color:var(--sub); line-height:1.7;}
+
+  /* ---- 조직도(트리) ---- */
+  .org-chart{margin-top:70px;}
+  .chart-top{
+    text-align:center; padding:16px; max-width:320px; margin:0 auto;
+    font-weight:800; font-size:15px; border:1px solid var(--ink); border-radius:6px;
+  }
+  .chart-top .sub{font-weight:400; font-size:11.5px; color:var(--sub); margin-top:5px;}
+  .connector{width:1px; height:30px; background:var(--line); margin:0 auto;}
+  .chart-branches{display:grid; grid-template-columns:repeat(5,1fr); gap:12px; position:relative;}
+  .branch-node{border:1px solid var(--line); border-radius:6px; padding:18px 12px; text-align:center; font-size:12px;}
+  .branch-node .b-num{font-weight:800; font-size:12px; color:var(--blue);}
+  .branch-node .b-name{font-weight:700; margin:6px 0 2px; font-size:13px;}
+  .branch-node .b-pi{color:var(--sub); font-size:10.5px;}
+  .branch-list{margin-top:10px; font-size:11px; color:var(--sub); text-align:left; padding-left:0; list-style:none;}
+  .branch-list li{margin-bottom:4px; padding-left:10px; border-left:2px solid var(--line);}
+
+  /* ---- 디렉터리 리스트 ---- */
+  .dir-head{display:flex; justify-content:space-between; align-items:baseline; gap:20px; flex-wrap:wrap; margin:70px 0 6px;}
+  .dir-head h3{font-size:19px; font-weight:800; margin:0;}
+  .dir-head .cap{font-size:12.5px; color:var(--sub);}
+  .dir-list{border-top:1px solid var(--ink); margin-top:24px;}
+  .dir-row{display:flex; align-items:center; gap:24px; padding:22px 0; border-bottom:1px solid var(--line);}
+  .dir-row .d-num{font-weight:800; color:var(--blue); font-size:13px; flex:0 0 26px;}
+  .dir-row .d-name{font-weight:800; font-size:14.5px; line-height:1.4; flex:0 0 200px;}
+  .dir-row .d-desc{color:var(--sub); font-size:12.5px; flex:1;}
+  .dir-row .d-btn{flex:none;}
+
+  .council-note{margin-top:30px; border-left:2px solid var(--blue); padding:4px 0 4px 22px; font-size:13.5px; color:var(--sub);}
+  .council-note strong{color:var(--ink); font-weight:700;}
+
+  .subhead{font-size:12px; letter-spacing:0.1em; color:var(--sub); text-transform:uppercase; margin:70px 0 6px;}
+  .subhead-title{font-size:20px; font-weight:800; margin:0 0 8px;}
+  .subhead-desc{font-size:13.5px; color:var(--sub); max-width:600px; margin-bottom:36px;}
+
+  .council-top{
+    text-align:center; padding:14px; max-width:260px; margin:0 auto;
+    font-weight:800; font-size:15px; background:var(--blue-dark); color:#fff; border-radius:6px;
+  }
+  .council-roles{display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin:14px 0 0; font-size:11.5px; color:var(--sub);}
+  .council-roles span{border:1px solid var(--line); padding:5px 12px; border-radius:999px;}
+  .council-committees{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
+  .committee-node{border:1px solid var(--line); border-radius:6px; padding:18px 14px; text-align:center;}
+  .committee-node .c-title{font-weight:700; font-size:13px; margin-bottom:8px;}
+  .committee-node .c-desc{font-size:11.5px; color:var(--sub); line-height:1.6;}
+
+  /* ---- 참여기관 상세 목록 ---- */
+  .org-group{margin-top:52px;}
+  .org-group h3{font-weight:800; font-size:18px; margin:0 0 4px;}
+  .org-group .group-sub{font-size:12px; color:var(--sub); margin-bottom:16px;}
+  .org-list{display:flex; flex-direction:column;}
+  .org-item{display:flex; justify-content:space-between; align-items:baseline; gap:24px; padding:13px 0; font-size:13.5px; border-bottom:1px solid var(--line);}
+  .org-item .oi-name{font-weight:700; flex:0 0 220px;}
+  .org-item .oi-role{color:var(--sub); font-size:12.5px; text-align:right;}
+  .org-item.lead .oi-name{color:var(--blue);}
+  .org-item.lead .oi-name::after{content:" · 총괄"; font-size:10.5px; color:var(--sub); font-weight:400;}
+  .org-item.clickable{cursor:pointer;}
+  .org-item.clickable:hover{background:var(--panel);}
+  .org-item.clickable .oi-name::before{content:"+ "; color:var(--blue); font-weight:700;}
+
+  /* ---- 성과 ---- */
+  .kpi-phase{margin-top:48px;}
+  .kpi-phase h3{font-size:18px; font-weight:800; margin:0 0 4px;}
+  .kpi-phase .phase-sub{font-size:12.5px; color:var(--sub); margin-bottom:18px;}
+  .kpi-list{display:flex; flex-wrap:wrap; border-top:1px solid var(--ink);}
+  .kpi-item{flex:1 1 240px; padding:18px 20px 18px 0; border-bottom:1px solid var(--line);}
+  .kpi-item .k-num{font-weight:800; font-size:21px; color:var(--blue);}
+  .kpi-item .k-lbl{font-size:12px; color:var(--sub); margin-top:4px;}
+  .placeholder-note{margin-top:36px; font-size:12.5px; color:var(--sub); border-top:1px solid var(--line); padding-top:18px;}
+
+  /* ---- 공지사항 배너 ---- */
+  .notice-hero{
+    background:linear-gradient(120deg,#3f66e6 0%, #6a8cf2 100%); color:#fff; padding:64px 28px;
+  }
+  .notice-hero-inner{max-width:1120px; margin:0 auto; display:flex; justify-content:space-between; gap:40px; flex-wrap:wrap; align-items:flex-start;}
+  .notice-hero .eyebrow{color:#dbe6ff;}
+  .notice-hero .eyebrow .dash{background:#dbe6ff;}
+  .notice-hero h2{font-size:28px; font-weight:800; line-height:1.4; margin:0 0 14px; max-width:520px;}
+  .notice-hero p{font-size:13.5px; color:rgba(255,255,255,0.85); max-width:480px; margin:0;}
+  .notice-search{background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.3); border-radius:8px; padding:16px; min-width:280px;}
+  .notice-search .ns-label{font-size:11.5px; color:rgba(255,255,255,0.85); margin-bottom:10px; font-weight:700;}
+  .notice-search .ns-row{display:flex; gap:8px;}
+  .notice-search input{flex:1; border:none; border-radius:4px; padding:10px 12px; font-size:13px; font-family:var(--sans);}
+  .notice-search button{background:var(--ink); color:#fff; border:none; border-radius:4px; padding:0 16px; font-size:13px; font-weight:700; cursor:pointer;}
+
+  .notice-body{max-width:1120px; margin:0 auto; padding:56px 28px 100px; display:flex; gap:60px; align-items:flex-start;}
+  .notice-main{flex:1; min-width:0;}
+  .filter-row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:30px;}
+  .filter-pill{border:1px solid var(--line); border-radius:999px; padding:8px 16px; font-size:12.5px; font-weight:600; color:var(--sub); cursor:pointer; background:#fff;}
+  .filter-pill.active{background:var(--blue); border-color:var(--blue); color:#fff;}
+  .notice-list-head{display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid var(--ink); padding-bottom:12px; margin-bottom:6px; font-size:14px; font-weight:800;}
+  .notice-list-head .cap{font-size:12px; color:var(--sub); font-weight:400;}
+  .notice-row{display:flex; align-items:baseline; gap:20px; padding:18px 0; border-bottom:1px solid var(--line); font-size:14px;}
+  .notice-row .n-date{color:var(--sub); font-size:12.5px; flex:0 0 84px;}
+  .notice-row .n-tag{
+    flex:0 0 auto; font-size:11px; font-weight:700; color:var(--blue); background:var(--tint);
+    padding:3px 10px; border-radius:999px;
+  }
+  .notice-row .n-new{color:#e0483e; font-weight:800; font-size:10.5px; margin-left:6px;}
+  .notice-row .n-title{flex:1; font-weight:600;}
+  .notice-row .n-link{color:var(--blue); font-size:12.5px; font-weight:700; white-space:nowrap;}
+
+  .notice-side{flex:0 0 280px;}
+  .side-card{background:var(--panel); border-radius:8px; padding:24px;}
+  .side-card h4{font-size:15px; font-weight:800; margin:0 0 18px;}
+  .side-event{padding:14px 0; border-bottom:1px solid var(--line);}
+  .side-event:last-of-type{border-bottom:none;}
+  .side-event .se-tag{display:inline-block; font-size:10.5px; font-weight:700; color:var(--blue); background:var(--tint); padding:2px 9px; border-radius:999px; margin-bottom:8px;}
+  .side-event .se-title{font-size:13.5px; font-weight:700; margin-bottom:4px;}
+  .side-event .se-desc{font-size:12px; color:var(--sub); line-height:1.6;}
+  .side-note{font-size:11.5px; color:var(--sub); margin-top:16px; padding-top:16px; border-top:1px solid var(--line); line-height:1.7;}
+
+  /* ---- 자료실 ---- */
+  .archive-list{border-top:1px solid var(--ink); margin-top:36px;}
+  .archive-row{display:flex; align-items:baseline; gap:20px; padding:18px 0; border-bottom:1px solid var(--line); font-size:14px;}
+  .archive-row .ar-type{font-size:11px; font-weight:700; color:var(--blue); background:var(--tint); padding:3px 10px; border-radius:999px; flex:0 0 auto;}
+  .archive-row .ar-name{flex:1; font-weight:600;}
+  .archive-row .ar-date{font-size:12px; color:var(--sub);}
+  .more-link{display:inline-block; margin-top:24px; font-size:13px; font-weight:700; color:var(--blue);}
+
+  /* ---- 플로팅 버튼 ---- */
+  .to-top{
+    position:fixed; right:28px; bottom:28px; z-index:30;
+    width:50px; height:50px; border-radius:999px; background:var(--ink); color:#fff;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:15px;
+    opacity:0; pointer-events:none; transform:translateY(8px); transition:opacity .25s ease, transform .25s ease;
+  }
+  .to-top span{font-size:8.5px; letter-spacing:0.06em; margin-top:2px; color:rgba(255,255,255,0.75);}
+  .to-top.show{opacity:1; pointer-events:auto; transform:translateY(0);}
+  .to-top:hover{background:var(--blue);}
+
+  /* ---- 기관 상세 모달 ---- */
+  .inst-overlay{display:none; position:fixed; inset:0; z-index:50; background:rgba(10,12,20,0.55); align-items:center; justify-content:center; padding:28px;}
+  .inst-overlay.show{display:flex;}
+  .inst-modal{background:#fff; max-width:920px; width:100%; max-height:86vh; overflow-y:auto; border-radius:10px; position:relative; border-top:4px solid var(--blue);}
+  .inst-modal-head{padding:32px 70px 22px 36px; border-bottom:1px solid var(--line);}
+  .inst-modal-head .im-eyebrow{font-size:11px; letter-spacing:0.1em; color:var(--blue); font-weight:700; margin-bottom:10px; text-transform:uppercase;}
+  .inst-modal-head .im-name{font-size:26px; font-weight:800;}
+  .inst-modal-head .im-role{font-size:13px; color:var(--sub); margin-top:8px;}
+  .inst-modal-head .im-role strong{color:var(--ink); font-weight:700;}
+  .inst-modal-close{
+    position:absolute; top:24px; right:28px; border:1px solid var(--line); border-radius:999px;
+    background:#fff; font-size:12.5px; font-weight:700; color:var(--sub); cursor:pointer; padding:8px 16px;
+  }
+  .inst-modal-close:hover{border-color:var(--ink); color:var(--ink);}
+  .inst-modal-body{display:flex;}
+  .inst-col{flex:1 1 50%; padding:30px 36px;}
+  .inst-col + .inst-col{border-left:1px solid var(--line);}
+  .inst-col .im-sub{font-size:11px; letter-spacing:0.1em; color:var(--blue); font-weight:700; margin-bottom:14px; text-transform:uppercase;}
+  .inst-col h4{font-size:18px; font-weight:800; margin:0 0 16px;}
+  .inst-col p{font-size:13.5px; margin:0 0 14px; line-height:1.8; color:#2a2c33;}
+  .im-callout{background:var(--tint); border-left:3px solid var(--blue); padding:14px 18px; margin:20px 0; border-radius:0 6px 6px 0;}
+  .im-callout .ic-label{font-size:10.5px; font-weight:800; color:var(--blue); letter-spacing:0.08em; margin-bottom:6px; text-transform:uppercase;}
+  .im-callout .ic-text{font-size:13px; color:#1c2230; line-height:1.7;}
+  .im-mini{display:grid; grid-template-columns:repeat(3,1fr); border:1px solid var(--line); border-radius:6px; margin-top:20px;}
+  .im-mini div{padding:14px 12px; border-right:1px solid var(--line); text-align:center;}
+  .im-mini div:last-child{border-right:none;}
+  .im-mini .mm-t{font-size:13px; font-weight:800; color:var(--blue); margin-bottom:4px;}
+  .im-mini .mm-d{font-size:10.5px; color:var(--sub);}
+  .inst-col ol{margin:0; padding:0; list-style:none;}
+  .inst-col ol li{display:flex; gap:14px; padding:14px 0; border-bottom:1px solid var(--line);}
+  .inst-col ol li:last-child{border-bottom:none;}
+  .inst-col ol li .oi-num{font-size:12px; font-weight:800; color:var(--blue); flex:0 0 20px;}
+  .inst-col ol li .oi-body .oi-t{font-size:13.5px; font-weight:700; margin-bottom:4px;}
+  .inst-col ol li .oi-body .oi-d{font-size:12px; color:var(--sub); line-height:1.65;}
+  .inst-modal-foot{display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap; padding:22px 36px; border-top:1px solid var(--line); font-size:12px; color:var(--sub);}
+
+  @media (max-width:640px){
+    .inst-modal-body{flex-direction:column;}
+    .inst-col + .inst-col{border-left:none; border-top:1px solid var(--line);}
+  }
+
+  /* ---- 푸터 ---- */
+  footer{background:var(--blue-dark); color:rgba(255,255,255,0.7);}
+  .footer-top{max-width:1120px; margin:0 auto; padding:56px 28px 40px; display:flex; gap:60px; flex-wrap:wrap; justify-content:space-between;}
+  .footer-brand{flex:1 1 260px;}
+  .footer-brand .fb-name{display:flex; align-items:center; gap:8px; color:#fff; font-weight:800; font-size:17px; margin-bottom:12px;}
+  .footer-brand .fb-name svg{width:20px; height:20px;}
+  .footer-brand p{font-size:12.5px; line-height:1.8; max-width:280px;}
+  .footer-col{flex:0 0 auto;}
+  .footer-col h5{font-size:11px; letter-spacing:0.08em; color:rgba(255,255,255,0.45); margin:0 0 14px; text-transform:uppercase;}
+  .footer-col a{display:block; font-size:13px; margin-bottom:10px; color:rgba(255,255,255,0.75);}
+  .footer-col a:hover{color:#fff;}
+  .footer-col .fc-text{font-size:12.5px; line-height:1.9;}
+  .footer-bottom{
+    border-top:1px solid rgba(255,255,255,0.12); max-width:1120px; margin:0 auto; padding:22px 28px;
+    display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; font-size:11.5px; color:rgba(255,255,255,0.45);
+  }
+  .footer-logos{display:flex; gap:10px; flex-wrap:wrap;}
+  .footer-logos span{border:1px solid rgba(255,255,255,0.2); border-radius:999px; padding:5px 14px; font-size:11px;}
+
+  @media (max-width:860px){
+    .to-top{right:18px; bottom:18px; width:46px; height:46px;}
+    h1.hero-title{font-size:32px;}
+    .why-grid{flex-direction:column; gap:24px;}
+    .trio{grid-template-columns:1fr; gap:28px;}
+    .plat-grid{grid-template-columns:repeat(2,1fr);}
+    .axis-grid{grid-template-columns:1fr; border-top:none;}
+    .axis-item{border-right:none; border-top:1px solid var(--line); padding-top:24px;}
+    .chart-branches{grid-template-columns:repeat(2,1fr);}
+    .council-committees{grid-template-columns:repeat(2,1fr);}
+    .dir-row{flex-wrap:wrap;}
+    .dir-row .d-desc{flex:1 1 100%; order:3;}
+    .stat-grid{flex-direction:column;}
+    .stat{border-right:none; border-bottom:1px solid var(--line);}
+    .org-item{flex-direction:column; gap:4px;}
+    .org-item .oi-role{text-align:left;}
+    .pi-block{flex-direction:column;}
+    nav.menu{display:none;}
+    .notice-body{flex-direction:column;}
+    .notice-side{flex:none; width:100%;}
+    .notice-hero-inner{flex-direction:column;}
+    .archive-row{flex-direction:column; align-items:flex-start; gap:4px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"></circle><line x1="6" y1="18" x2="18" y2="6"></line></svg>
+      FLAME-ARK
+    </div>
+    <nav class="menu">
+      <a href="#intro">소개</a>
+      <a href="#pi">인사말</a>
+      <a href="#org">기구도</a>
+      <a href="#members">참여기관</a>
+      <a href="#outcome">성과</a>
+      <a href="#notice">공지사항</a>
+      <a href="#archive">자료실</a>
+      <a href="english.html" class="lang-link">ENG</a>
+    </nav>
+  </div>
+  <div class="nav-tagline">병원 특화 연합학습 기반 멀티모달 파운데이션 모델 구축 및 AI 솔루션 개발</div>
+</header>
+
+<section class="hero" id="intro">
+  <div class="hero-inner">
+    <div class="hero-eyebrow"><span class="dash"></span>NATIONAL MEDICAL AI RESEARCH PROJECT · 2025–2029</div>
+    <h1 class="hero-title"><span class="hl">병원 데이터를 밖으로 내보내지 않고</span>, 함께 학습하는 의료 AI의 다음 기준을 만듭니다.</h1>
+    <p class="hero-lead">
+      FLAME-ARK는 여러 병원이 각자의 데이터를 외부로 반출하지 않고도 연합학습(Federated Learning)으로
+      함께 인공지능 모델을 학습할 수 있도록 하는 국가 R&amp;D 컨소시엄입니다. 의료 범용 멀티모달
+      파운데이션 모델을 구축하고, 5개 세부과제가 각기 다른 임상 현장의 문제를 해결하는 AI 솔루션을 개발·실증합니다.
+    </p>
+    <div class="hero-cta">
+      <a href="#pi" class="btn btn-primary">프로젝트 알아보기</a>
+      <a href="#org" class="btn btn-outline">연구 구조 보기</a>
+    </div>
+    <div class="hero-foot">
+      <div>데이터는 각 병원 안에, 학습의 인사이트는 연결망 위에 남습니다.</div>
+      <div class="explore">EXPLORE RESEARCH →</div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="eyebrow"><span class="dash"></span>01 · WHY FLAME-ARK</div>
+  <div class="why-grid">
+    <h2>의료 AI에 필요한 것은 더 많은 데이터가 아니라, 더 안전한 연결 방식입니다.</h2>
+    <p>
+      환자의 삶이 담긴 의료 데이터는 각 병원의 보호 환경에 머물러야 합니다. FLAME-ARK는 이 원칙을
+      지키면서도 다기관의 임상 경험을 연합학습으로 연결해, 현장에 도움이 되는 AI를 설계합니다.
+    </p>
+  </div>
+  <hr class="div">
+  <div class="trio">
+    <div class="trio-item">
+      <div class="t-cat">Trust</div>
+      <div class="t-title">데이터 주권</div>
+      <div class="t-desc">원천 데이터의 외부 반출을 전제로 하지 않습니다.</div>
+    </div>
+    <div class="trio-item">
+      <div class="t-cat">Learning</div>
+      <div class="t-title">멀티모달 AI</div>
+      <div class="t-desc">영상·텍스트·음성 등 다양한 임상 신호를 연결합니다.</div>
+    </div>
+    <div class="trio-item">
+      <div class="t-cat">Impact</div>
+      <div class="t-title">임상 실증</div>
+      <div class="t-desc">기술 성능을 넘어 실제 의료 경험을 검증합니다.</div>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat"><div class="num">5년</div><div class="lbl">사업 기간 (2025–2029)</div></div>
+    <div class="stat"><div class="num">5개</div><div class="lbl">세부과제(주관)</div></div>
+    <div class="stat"><div class="num">9개</div><div class="lbl">참여 병원</div></div>
+    <div class="stat"><div class="num">15개</div><div class="lbl">참여 대학·기업</div></div>
+  </div>
+
+  <div class="plat-head" style="margin-top:90px;">
+    <h2>하나의 공통 플랫폼 위에서, 의료 서비스의 중요한 순간들을 지원합니다.</h2>
+    <p>기반 모델과 연합학습 운영체계가 진료·입퇴원·회송·상담으로 이어지는 환자 여정의 접점을 연결합니다.</p>
+  </div>
+  <div class="plat-grid">
+    <div class="plat-card core">
+      <div class="p-tag">Core Platform</div>
+      <div class="p-title">멀티모달 데이터 · 파운데이션 모델 · 연합학습 플랫폼</div>
+      <div class="p-org">1주관 · 삼성서울병원</div>
+      <div class="p-desc">다기관 임상 경험을 안전하게 학습 가능한 지식으로 전환하는 공통 연구 기반입니다.</div>
+    </div>
+    <div class="plat-card">
+      <div class="p-tag">Clinical Pathway</div>
+      <div class="p-title">환자 중심 협진 지원 AI</div>
+      <div class="p-org">2주관 · 분당차병원</div>
+      <div class="p-desc">다학제 진료 전 과정을 지원하는 AI 에이전트를 개발합니다.</div>
+    </div>
+    <div class="plat-card">
+      <div class="p-tag">Care Transition</div>
+      <div class="p-title">입/퇴원 지원 AI</div>
+      <div class="p-org">3주관 · 연세대학교</div>
+      <div class="p-desc">음성인식 EMR과 맞춤형 퇴원 교육 콘텐츠를 개발합니다.</div>
+    </div>
+    <div class="plat-card">
+      <div class="p-tag">Care Continuity</div>
+      <div class="p-title">회송/전원 지원 AI</div>
+      <div class="p-org">4주관 · 동아대학교병원</div>
+      <div class="p-desc">전원·회송 서류 자동생성과 초진 상담을 지원합니다.</div>
+    </div>
+    <div class="plat-card">
+      <div class="p-tag">Patient Engagement</div>
+      <div class="p-title">환자 상담 지원 AI</div>
+      <div class="p-org">5주관 · 우리아이들병원</div>
+      <div class="p-desc">소아청소년 건강관리와 요양기관-응급실 전원을 지원합니다.</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" id="pi">
+  <div class="eyebrow"><span class="dash"></span>02 · GREETINGS</div>
+  <h2 class="h">총괄 PI 인사말</h2>
+  <div class="pi-block">
+    <div class="pi-photo">PROFILE<br>PHOTO</div>
+    <div class="pi-text">
+      <div class="name">허우성</div>
+      <div class="role">FLAME-ARK 총괄책임자 · 삼성서울병원</div>
+      <p>
+        의료 데이터는 환자 한 분 한 분의 삶이 담긴 기록입니다. 그만큼 소중하기에, 그동안 병원들은
+        서로의 데이터를 나누지 못한 채 각자의 담장 안에서만 인공지능을 키워 왔습니다. 데이터를 모으지 않고는
+        좋은 모델을 만들기 어렵고, 데이터를 모으자니 환자의 신뢰를 저버리게 되는 이 딜레마가 의료 AI가
+        오랫동안 넘지 못한 벽이었습니다.
+      </p>
+      <p>
+        FLAME-ARK는 이 벽을 허무는 대신, 넘나드는 길을 내는 연구입니다. 데이터는 각 병원의 담장 안에
+        그대로 두되, 그 데이터가 만들어내는 배움만이 병원과 병원 사이를 오갈 수 있도록 연합학습 기술을
+        설계합니다. 이렇게 완성한 의료 범용 멀티모달 파운데이션 모델을 토대로, 다섯 개의 세부과제가
+        협진, 입·퇴원, 회송·전원, 소아청소년 진료 등 실제 진료 현장 곳곳의 문제에 답을 내놓습니다.
+      </p>
+      <p>
+        9개 병원, 6개 대학, 9개 기업이 하나의 목표 아래 모였습니다. 각자의 자리에서 데이터를 지키고,
+        기술을 벼리고, 현장의 목소리를 전해주신 모든 연구진께 깊이 감사드립니다. FLAME-ARK가 그
+        신뢰 위에서, 의료진과 환자 모두가 체감할 수 있는 결과로 5년의 여정을 마칠 수 있도록
+        책임감을 갖고 이끌어 가겠습니다.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" id="org">
+  <div class="eyebrow"><span class="dash"></span>03 · PARTNER ECOSYSTEM</div>
+  <div class="why-grid">
+    <h2>서로 다른 전문성이 하나의 연합학습 네트워크로 연결됩니다.</h2>
+    <p>
+      임상 현장의 질문, 인공지능 연구의 방법론, 산업의 실행 역량이 연합학습 기반의 안전한 협력 구조
+      안에서 연결됩니다.
+    </p>
+  </div>
+  <hr class="div">
+
+  <div class="axis-grid">
+    <div class="axis-item">
+      <div class="a-bar"></div>
+      <div class="a-cat">CLINICAL NETWORK</div>
+      <div class="a-title">의료기관 (9개)</div>
+      <div class="a-desc">임상 과제 정의, 데이터 제공 및 현장 검증</div>
+    </div>
+    <div class="axis-item">
+      <div class="a-bar"></div>
+      <div class="a-cat">RESEARCH &amp; TECHNOLOGY</div>
+      <div class="a-title">대학·연구기관 (6개)</div>
+      <div class="a-desc">연합학습 방법론, 모델 개발 및 신뢰성 연구</div>
+    </div>
+    <div class="axis-item">
+      <div class="a-bar"></div>
+      <div class="a-cat">PLATFORM &amp; INDUSTRY</div>
+      <div class="a-title">기업 파트너 (9개)</div>
+      <div class="a-desc">플랫폼 개발·운영, 서비스 상용화 지원</div>
+    </div>
+  </div>
+
+  <div class="org-chart">
+    <div class="chart-top">
+      총괄 · 1주관 삼성서울병원
+      <div class="sub">총괄책임자 허우성</div>
+    </div>
+    <div class="connector"></div>
+    <div class="chart-branches">
+      <div class="branch-node">
+        <div class="b-num">1주관</div>
+        <div class="b-name">삼성서울병원</div>
+        <div class="b-pi">PI 허우성</div>
+        <ul class="branch-list">
+          <li>전북대학교병원</li><li>울산과학기술원</li><li>제로원에이아이</li>
+          <li>하해호</li><li>BK Instruments</li><li>파이디지털헬스케어</li>
+        </ul>
+      </div>
+      <div class="branch-node">
+        <div class="b-num">2주관</div>
+        <div class="b-name">분당차병원</div>
+        <div class="b-pi">PI 이성환</div>
+        <ul class="branch-list"><li>서울대학교</li><li>구미차병원</li><li>차바이오텍</li><li>차헬스케어</li></ul>
+      </div>
+      <div class="branch-node">
+        <div class="b-num">3주관</div>
+        <div class="b-name">연세대학교</div>
+        <div class="b-pi">PI 정윤빈</div>
+        <ul class="branch-list"><li>강원대학교병원</li><li>강원대학교 산학협력단</li><li>도우</li></ul>
+      </div>
+      <div class="branch-node">
+        <div class="b-num">4주관</div>
+        <div class="b-name">동아대학교병원</div>
+        <div class="b-pi">PI 권인호</div>
+        <ul class="branch-list"><li>세종충남대학교병원</li><li>성균관대학교</li><li>에이젠다</li></ul>
+      </div>
+      <div class="branch-node">
+        <div class="b-num">5주관</div>
+        <div class="b-name">우리아이들병원</div>
+        <div class="b-pi">PI 정성관</div>
+        <ul class="branch-list"><li>제주대학교병원</li><li>한림대학교</li><li>닥터스바이오텍</li></ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="dir-head">
+    <h3>세부과제 참여기관 디렉터리</h3>
+    <div class="cap">주관기관과 전문 범주를 중심으로 구성한 협력 맵입니다.</div>
+  </div>
+  <div class="dir-list">
+    <div class="dir-row">
+      <div class="d-num">01</div>
+      <div class="d-name">삼성서울병원<br>총괄·주관</div>
+      <div class="d-desc">멀티모달 데이터셋 구축, 의료 범용 파운데이션 모델, 연합학습 플랫폼 및 대시보드</div>
+      <div class="d-btn"><button class="btn btn-outline" onclick="openInst('smc')">상세보기</button></div>
+    </div>
+    <div class="dir-row">
+      <div class="d-num">02</div>
+      <div class="d-name">분당차병원<br>2주관</div>
+      <div class="d-desc">환자 중심 다학제 진료 지원 솔루션, 사용자 맞춤형 대화 에이전트</div>
+      <div class="d-btn"><button class="btn btn-outline" disabled>상세보기</button></div>
+    </div>
+    <div class="dir-row">
+      <div class="d-num">03</div>
+      <div class="d-name">연세대학교<br>3주관</div>
+      <div class="d-desc">생성형 AI 기반 음성인식 EMR, 의무기록 기반 맞춤형 퇴원 교육 콘텐츠</div>
+      <div class="d-btn"><button class="btn btn-outline" disabled>상세보기</button></div>
+    </div>
+    <div class="dir-row">
+      <div class="d-num">04</div>
+      <div class="d-name">동아대학교병원<br>4주관</div>
+      <div class="d-desc">의무기록 기반 전원/회송 서류 자동생성, 타원 의무기록 요약 기반 초진 상담 에이전트</div>
+      <div class="d-btn"><button class="btn btn-outline" disabled>상세보기</button></div>
+    </div>
+    <div class="dir-row">
+      <div class="d-num">05</div>
+      <div class="d-name">우리아이들병원<br>5주관</div>
+      <div class="d-desc">소아청소년 건강관리·질병예방 서비스, 요양기관-응급실 스마트 전원 의사결정 지원</div>
+      <div class="d-btn"><button class="btn btn-outline" disabled>상세보기</button></div>
+    </div>
+  </div>
+
+  <div class="subhead">Governance</div>
+  <div class="subhead-title">협의체 추진 체계</div>
+  <div class="subhead-desc">
+    5개 세부과제가 하나의 컨소시엄으로 움직일 수 있도록, FLAME-ARK 협의체가 상위 의사결정과
+    4개 소협의체 운영을 총괄합니다.
+  </div>
+  <div class="council-top">FLAME-ARK 협의체</div>
+  <div class="council-roles">
+    <span>총괄책임자</span><span>주관책임자</span><span>기관책임자</span><span>플랫폼책임자</span>
+  </div>
+  <div class="connector"></div>
+  <div class="council-committees">
+    <div class="committee-node">
+      <div class="c-title">연합학습 기술개선 협의체</div>
+      <div class="c-desc">연합학습 알고리즘·플랫폼 기술 표준 논의</div>
+    </div>
+    <div class="committee-node">
+      <div class="c-title">의료서비스 사용자참여 협의체</div>
+      <div class="c-desc">의료진·환자 요구사항 수렴, 서비스 사용성 검토</div>
+    </div>
+    <div class="committee-node">
+      <div class="c-title">의료데이터 분석·관리 협의체</div>
+      <div class="c-desc">데이터 표준화·품질관리·라벨링 검토</div>
+    </div>
+    <div class="committee-node">
+      <div class="c-title">AI 안전·윤리 협의체</div>
+      <div class="c-desc">개인정보보호, IRB·DRB 승인, 윤리적 AI 설계 지침 점검</div>
+    </div>
+  </div>
+  <div class="council-note">
+    <strong>운영 방식.</strong> 총괄 기관 주관으로 월 1회 정기 회의와 분기별 워크숍을 운영하며,
+    각 기관별 프로젝트 책임자가 참석해 신속한 의사결정과 책임성을 확보합니다.
+    법률·의료윤리·AI 전문가로 구성된 자문 그룹이 연구 과정의 윤리·법적 이슈를 정기 점검합니다.
+  </div>
+</div>
+
+<div class="wrap" id="members">
+  <div class="eyebrow"><span class="dash"></span>04 · CONSORTIUM MEMBERS</div>
+  <h2 class="h">참여기관 소개</h2>
+
+  <div class="org-group">
+    <h3>1주관 · 멀티모달 데이터·파운데이션 모델·연합학습 플랫폼</h3>
+    <div class="group-sub">총괄 삼성서울병원</div>
+    <div class="org-list">
+      <div class="org-item lead clickable" onclick="openInst('smc')"><div class="oi-name">삼성서울병원</div><div class="oi-role">멀티모달 데이터 구축, 다기관 연합학습 및 실증 총괄</div></div>
+      <div class="org-item"><div class="oi-name">전북대학교병원</div><div class="oi-role">멀티모달 데이터 구축, 서비스 개발 및 검증</div></div>
+      <div class="org-item"><div class="oi-name">울산과학기술원(UNIST)</div><div class="oi-role">파운데이션 모델 경량화, 연합학습 기술 개발·고도화</div></div>
+      <div class="org-item"><div class="oi-name">제로원에이아이</div><div class="oi-role">연합학습 기반 의료서비스 지원 플랫폼 개발·운영</div></div>
+      <div class="org-item"><div class="oi-name">하해호</div><div class="oi-role">데이터셋 관리 대시보드 개발, 컨소시엄 운영 지원</div></div>
+      <div class="org-item"><div class="oi-name">BK Instruments</div><div class="oi-role">파운데이션 모델 활용 서비스 개발 및 검증</div></div>
+      <div class="org-item"><div class="oi-name">파이디지털헬스케어</div><div class="oi-role">병원 내 파운데이션 모델·플랫폼 연동</div></div>
+    </div>
+  </div>
+
+  <div class="org-group">
+    <h3>2주관 · 환자 중심 협진 지원 AI</h3>
+    <div class="group-sub">총괄 분당차병원</div>
+    <div class="org-list">
+      <div class="org-item lead"><div class="oi-name">분당차병원</div><div class="oi-role">다학제 진료 솔루션 개발, 임상 데이터 제공</div></div>
+      <div class="org-item"><div class="oi-name">서울대학교</div><div class="oi-role">멀티모달 대화 에이전트 알고리즘 개발</div></div>
+      <div class="org-item"><div class="oi-name">구미차병원</div><div class="oi-role">환자 데이터 제공, 파일럿 테스트 지원</div></div>
+      <div class="org-item"><div class="oi-name">차바이오텍</div><div class="oi-role">데이터 수집·처리, 플랫폼 개발</div></div>
+      <div class="org-item"><div class="oi-name">차헬스케어</div><div class="oi-role">AI 모델 인증, 해외 병원 적용 방안 수립</div></div>
+    </div>
+  </div>
+
+  <div class="org-group">
+    <h3>3주관 · 입/퇴원 지원 AI</h3>
+    <div class="group-sub">총괄 연세대학교 산학협력단</div>
+    <div class="org-list">
+      <div class="org-item lead"><div class="oi-name">연세대학교 산학협력단</div><div class="oi-role">음성인식 EMR 솔루션 설계 및 실증</div></div>
+      <div class="org-item"><div class="oi-name">강원대학교병원</div><div class="oi-role">퇴원 교육 서비스 설계·데이터 수집, 실증 수행</div></div>
+      <div class="org-item"><div class="oi-name">강원대학교 산학협력단</div><div class="oi-role">퇴원 교육 콘텐츠 개발·고도화</div></div>
+      <div class="org-item"><div class="oi-name">도우</div><div class="oi-role">음성인식 EMR 솔루션 개발·고도화</div></div>
+    </div>
+  </div>
+
+  <div class="org-group">
+    <h3>4주관 · 회송/전원 지원 AI</h3>
+    <div class="group-sub">총괄 동아대학교병원</div>
+    <div class="org-list">
+      <div class="org-item lead"><div class="oi-name">동아대학교병원</div><div class="oi-role">전원/회송 서류 생성 서비스 개발 및 실증</div></div>
+      <div class="org-item"><div class="oi-name">세종충남대학교병원</div><div class="oi-role">타원 의무기록 요약 기반 초진 상담 에이전트 실증</div></div>
+      <div class="org-item"><div class="oi-name">성균관대학교</div><div class="oi-role">OCR-LLM 기반 대규모 데이터 관리·분석 기술 개발</div></div>
+      <div class="org-item"><div class="oi-name">에이젠다</div><div class="oi-role">OCR-LLM 기술 개발 및 상용화</div></div>
+    </div>
+  </div>
+
+  <div class="org-group">
+    <h3>5주관 · 환자 상담 지원 AI</h3>
+    <div class="group-sub">총괄 우리아이들병원</div>
+    <div class="org-list">
+      <div class="org-item lead"><div class="oi-name">우리아이들병원</div><div class="oi-role">소아청소년 건강관리 서비스 기획·검증</div></div>
+      <div class="org-item"><div class="oi-name">제주대학교병원</div><div class="oi-role">요양기관-응급실 스마트 전원 솔루션 설계·검증</div></div>
+      <div class="org-item"><div class="oi-name">한림대학교</div><div class="oi-role">스마트 전원 의사결정 AI 시스템 개발</div></div>
+      <div class="org-item"><div class="oi-name">닥터스바이오텍</div><div class="oi-role">소아청소년 건강관리 AI 모델 개발</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" id="outcome">
+  <div class="eyebrow"><span class="dash"></span>05 · OUTCOME</div>
+  <h2 class="h">성과</h2>
+  <p style="font-size:14.5px; color:var(--sub); max-width:640px; margin-top:-14px;">
+    FLAME-ARK는 2025년 시작된 5년 과제로, 아래는 연구계획서에 명시된 <strong style="color:var(--ink);">단계별 목표 성과지표</strong>입니다.
+    실제 논문·특허·인증 등의 실적이 발생하는 대로 이 페이지에 순차 반영할 예정입니다.
+  </p>
+
+  <div class="kpi-phase">
+    <h3>1단계 목표 (2025–2027)</h3>
+    <div class="phase-sub">데이터 기반 구축, 플랫폼 개발·운영, 핵심 AI 솔루션 기술 확보</div>
+    <div class="kpi-list">
+      <div class="kpi-item"><div class="k-num">120만 건 이상</div><div class="k-lbl">멀티모달 데이터셋 구축</div></div>
+      <div class="kpi-item"><div class="k-num">1건</div><div class="k-lbl">멀티모달 데이터 표준화 매뉴얼</div></div>
+      <div class="kpi-item"><div class="k-num">1건 이상</div><div class="k-lbl">연합학습 플랫폼 구축·운영</div></div>
+      <div class="kpi-item"><div class="k-num">5건 이상</div><div class="k-lbl">SCI(E)급 국제학술지 논문 게재</div></div>
+    </div>
+  </div>
+
+  <div class="kpi-phase">
+    <h3>2단계 목표 (2028–2029)</h3>
+    <div class="phase-sub">플랫폼 고도화, 임상 현장 실증, 상용화 기반 마련</div>
+    <div class="kpi-list">
+      <div class="kpi-item"><div class="k-num">200만 건 이상</div><div class="k-lbl">멀티모달 데이터셋 누적 구축</div></div>
+      <div class="kpi-item"><div class="k-num">99.9%</div><div class="k-lbl">연합학습 플랫폼 시스템 안정성</div></div>
+      <div class="kpi-item"><div class="k-num">70점 초과</div><div class="k-lbl">시스템 사용성 점수(SUS)</div></div>
+      <div class="kpi-item"><div class="k-num">5건 이상</div><div class="k-lbl">SCI(E)급 국제학술지 논문 게재</div></div>
+    </div>
+  </div>
+
+  <p class="placeholder-note">
+    ※ 위 수치는 연구계획서에 명시된 단계별 목표 성과지표이며, 논문·특허·인증 등 실제 성과는 확정되는 대로 갱신됩니다.
+  </p>
+</div>
+
+<div id="notice">
+  <div class="notice-hero">
+    <div class="notice-hero-inner">
+      <div>
+        <div class="eyebrow"><span class="dash"></span>NEWS &amp; NOTICE</div>
+        <h2>프로젝트의 중요한 소식을 가장 먼저 전합니다.</h2>
+        <p>공고, 연구 소식, 행사 안내 등 FLAME-ARK와 함께 만들어가는 과정을 한곳에서 확인하세요.</p>
+      </div>
+      <div class="notice-search">
+        <div class="ns-label">공지사항 검색</div>
+        <div class="ns-row">
+          <input type="text" id="noticeSearch" placeholder="검색어를 입력하세요">
+          <button onclick="filterNotices()">검색</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notice-body">
+    <div class="notice-main">
+      <div class="filter-row" id="filterRow">
+        <div class="filter-pill active" data-cat="all">전체</div>
+        <div class="filter-pill" data-cat="사업공고">사업공고</div>
+        <div class="filter-pill" data-cat="연구소식">연구소식</div>
+        <div class="filter-pill" data-cat="행사세미나">행사·세미나</div>
+        <div class="filter-pill" data-cat="입찰채용">입찰·채용</div>
+      </div>
+      <div class="notice-list-head"><span>전체 공지</span><span class="cap" id="noticeCount">총 6건</span></div>
+      <div id="noticeList">
+        <div class="notice-row" data-cat="사업공고" data-title="flame-ark 컨소시엄 홈페이지 개설 안내">
+          <div class="n-date">2026.03</div>
+          <div class="n-tag">사업공고<span class="n-new">NEW</span></div>
+          <div class="n-title">FLAME-ARK 컨소시엄 홈페이지 개설 안내</div>
+          <a class="n-link" href="#notice">자세히 보기 →</a>
+        </div>
+        <div class="notice-row" data-cat="행사세미나" data-title="2026년도 1분기 정기 워크숍 개최 안내">
+          <div class="n-date">2026.03</div>
+          <div class="n-tag">행사·세미나<span class="n-new">NEW</span></div>
+          <div class="n-title">2026년도 1분기 정기 워크숍 개최 안내</div>
+          <a class="n-link" href="#notice">자세히 보기 →</a>
+        </div>
+        <div class="notice-row" data-cat="사업공고" data-title="1단계 연차평가 관련 자료 제출 안내">
+          <div class="n-date">2026.02</div>
+          <div class="n-tag">사업공고</div>
+          <div class="n-title">1단계 연차평가 관련 자료 제출 안내</div>
+          <a class="n-link" href="#notice">자세히 보기 →</a>
+        </div>
+        <div class="notice-row" data-cat="연구소식" data-title="의료 ai 연합학습 데이터 거버넌스 브리프 공개">
+          <div class="n-date">2026.01</div>
+          <div class="n-tag">연구소식</div>
+          <div class="n-title">의료 AI 연합학습 데이터 거버넌스 브리프 공개</div>
+          <a class="n-link" href="#notice">자세히 보기 →</a>
+        </div>
+        <div class="notice-row" data-cat="행사세미나" data-title="참여기관 실무 간담회 개최 결과 공유">
+          <div class="n-date">2025.12</div>
+          <div class="n-tag">행사·세미나</div>
+          <div class="n-title">참여기관 실무 간담회 개최 결과 공유</div>
+          <a class="n-link" href="#notice">자세히 보기 →</a>
+        </div>
+        <div class="notice-row" data-cat="입찰채용" data-title="연구지원 운영 파트너 모집 사전 안내">
+          <div class="n-date">2025.11</div>
+          <div class="n-tag">입찰·채용</div>
+          <div class="n-title">연구지원 운영 파트너 모집 사전 안내</div>
+          <a class="n-link" href="#notice">자세히 보기 →</a>
+        </div>
+      </div>
+    </div>
+    <div class="notice-side">
+      <div class="side-card">
+        <h4>이번 달</h4>
+        <div class="side-event">
+          <div class="se-tag">예정</div>
+          <div class="se-title">참여기관 실무 간담회</div>
+          <div class="se-desc">세부 일정과 참여 방법은 추후 공지될 예정입니다.</div>
+        </div>
+        <div class="side-event">
+          <div class="se-tag">예정</div>
+          <div class="se-title">연구 데이터 표준화 워크숍</div>
+          <div class="se-desc">관심 분야별 세션 구성을 준비 중입니다.</div>
+        </div>
+        <div class="side-event">
+          <div class="se-tag">예정</div>
+          <div class="se-title">연구성과 공유 브리핑</div>
+          <div class="se-desc">공개 범위와 신청 절차를 안내할 예정입니다.</div>
+        </div>
+        <div class="side-note">일정은 협의체 회의 결과에 따라 변경될 수 있으며, 확정 정보는 공지사항에서 안내합니다.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" id="archive">
+  <div class="eyebrow"><span class="dash"></span>07 · ARCHIVE</div>
+  <h2 class="h">자료실</h2>
+  <p style="font-size:14.5px; color:var(--sub); max-width:600px; margin-top:-14px;">멀티모달 데이터 표준화 매뉴얼, 협의체 운영 규정, 홍보자료 등을 내려받을 수 있습니다.</p>
+
+  <div class="archive-list">
+    <div class="archive-row"><span class="ar-type">규정·서식</span><span class="ar-name">FLAME-ARK 협의체 운영 규정</span><span class="ar-date">PDF</span></div>
+    <div class="archive-row"><span class="ar-type">매뉴얼</span><span class="ar-name">멀티모달 데이터 표준화 매뉴얼</span><span class="ar-date">PDF</span></div>
+    <div class="archive-row"><span class="ar-type">홍보자료</span><span class="ar-name">FLAME-ARK 소개 브로슈어(국문/영문)</span><span class="ar-date">PDF</span></div>
+  </div>
+  <a class="more-link" href="#archive">자료실 전체보기 →</a>
+</div>
+
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div class="fb-name">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"></circle><line x1="6" y1="18" x2="18" y2="6"></line></svg>
+        FLAME-ARK
+      </div>
+      <p>실증 병원 특화 연합학습 기반 멀티모달 파운데이션 모델 구축 및 AI 솔루션 개발 컨소시엄</p>
+    </div>
+    <div class="footer-col">
+      <h5>Menu</h5>
+      <a href="#intro">소개</a>
+      <a href="#org">기구도</a>
+      <a href="#members">참여기관</a>
+      <a href="#notice">공지사항</a>
+      <a href="#archive">자료실</a>
+    </div>
+    <div class="footer-col">
+      <h5>발주 · 지원기관</h5>
+      <div class="fc-text">보건복지부 (MOHW)<br>한국보건산업진흥원 (KHIDI)</div>
+    </div>
+    <div class="footer-col">
+      <h5>Contact</h5>
+      <div class="fc-text">FLAME-ARK 컨소시엄 · 총괄 삼성서울병원<br>서울특별시 강남구 일원로 81</div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 FLAME-ARK. All rights reserved.</div>
+    <div class="footer-logos"><span>보건복지부</span><span>한국보건산업진흥원</span></div>
+  </div>
+</footer>
+
+<a href="#intro" class="to-top" id="toTop" aria-label="홈으로 이동">↑<span>홈</span></a>
+
+<div class="inst-overlay" id="instOverlay" onclick="if(event.target===this) closeInst();">
+  <div class="inst-modal">
+    <button class="inst-modal-close" onclick="closeInst()">닫기</button>
+    <div class="inst-modal-head">
+      <div class="im-eyebrow" id="instEyebrow">Partner Profile · 01</div>
+      <div class="im-name" id="instName"></div>
+      <div class="im-role" id="instRole"></div>
+    </div>
+    <div class="inst-modal-body">
+      <div class="inst-col">
+        <div class="im-sub">Institution Overview</div>
+        <h4>기관 소개</h4>
+        <div id="instIntro"></div>
+        <div class="im-callout">
+          <div class="ic-label">Our Role</div>
+          <div class="ic-text" id="instRoleText"></div>
+        </div>
+        <div class="im-mini" id="instMini"></div>
+      </div>
+      <div class="inst-col">
+        <div class="im-sub">Project Contribution</div>
+        <h4>개발 서비스</h4>
+        <ol id="instServices"></ol>
+      </div>
+    </div>
+    <div class="inst-modal-foot">
+      <div>FLAME-ARK Partner Ecosystem · 기관별 역할과 기여를 확인하세요.</div>
+      <button class="btn btn-primary" onclick="closeInst()">다른 참여기관 보기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    var btn = document.getElementById('toTop');
+    function toggle(){
+      if (window.scrollY > 480) { btn.classList.add('show'); }
+      else { btn.classList.remove('show'); }
+    }
+    window.addEventListener('scroll', toggle, {passive:true});
+    toggle();
+  })();
+
+  var INST_INFO = {
+    smc: {
+      name: "삼성서울병원",
+      role: "1주관 · 총괄기관&nbsp;&nbsp;멀티모달 데이터 · 파운데이션 모델 · 연합학습 플랫폼",
+      intro: "<p>삼성서울병원은 성균관대학교 의과대학 부속병원으로서, 진료 현장과 연구 역량을 바탕으로 고도화된 의료서비스를 제공하고 있습니다. FLAME-ARK에서는 총괄기관으로서 다기관 협력의 기준을 설계하고 연구 수행을 연결합니다.</p><p>의료 데이터의 표준화, 멀티모달 모델 개발, 연합학습 플랫폼 운영을 통합적으로 이끌며, 연구 결과가 실제 임상 흐름 안에서 검증될 수 있도록 조정합니다.</p>",
+      roleText: "데이터 주권을 지키면서 다기관의 임상 경험을 하나의 안전한 학습망으로 연결합니다.",
+      mini: [["총괄","연구 운영·조정"],["기반","데이터·모델·플랫폼"],["실증","의료 현장 적용"]],
+      services: [
+        ["멀티모달 의료 데이터셋 구축","영상·텍스트·음성 등 이질적인 임상 데이터를 연구 목적에 맞게 연결합니다."],
+        ["의료 특화 파운데이션 모델 개발","다양한 임상 맥락을 이해하는 범용 모델의 기반을 설계합니다."],
+        ["연합학습 플랫폼 설계 및 운영","기관별 데이터 경계를 존중하며 모델 업데이트를 안전하게 집계합니다."],
+        ["5개 세부과제 실증 총괄","기술·임상·사용성 관점에서 연구 서비스의 현장 적용을 조율합니다."]
+      ]
+    }
+  };
+
+  function openInst(key){
+    var info = INST_INFO[key];
+    if (!info) return;
+    document.getElementById('instName').textContent = info.name;
+    document.getElementById('instRole').innerHTML = info.role;
+    document.getElementById('instIntro').innerHTML = info.intro;
+    document.getElementById('instRoleText').textContent = info.roleText;
+    var mini = document.getElementById('instMini');
+    mini.innerHTML = "";
+    info.mini.forEach(function(m){
+      var d = document.createElement('div');
+      d.innerHTML = '<div class="mm-t">'+m[0]+'</div><div class="mm-d">'+m[1]+'</div>';
+      mini.appendChild(d);
+    });
+    var list = document.getElementById('instServices');
+    list.innerHTML = "";
+    info.services.forEach(function(s, i){
+      var li = document.createElement('li');
+      li.innerHTML = '<div class="oi-num">0'+(i+1)+'</div><div class="oi-body"><div class="oi-t">'+s[0]+'</div><div class="oi-d">'+s[1]+'</div></div>';
+      list.appendChild(li);
+    });
+    document.getElementById('instOverlay').classList.add('show');
+  }
+  function closeInst(){
+    document.getElementById('instOverlay').classList.remove('show');
+  }
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') closeInst();
+  });
+
+  (function(){
+    var pills = document.querySelectorAll('.filter-pill');
+    var activeCat = 'all';
+    pills.forEach(function(p){
+      p.addEventListener('click', function(){
+        pills.forEach(function(x){ x.classList.remove('active'); });
+        p.classList.add('active');
+        activeCat = p.getAttribute('data-cat');
+        applyFilter();
+      });
+    });
+    window.filterNotices = applyFilter;
+    function applyFilter(){
+      var q = document.getElementById('noticeSearch').value.trim().toLowerCase();
+      var rows = document.querySelectorAll('.notice-row');
+      var count = 0;
+      rows.forEach(function(r){
+        var cat = r.getAttribute('data-cat');
+        var title = r.getAttribute('data-title');
+        var catOk = (activeCat === 'all' || cat === activeCat);
+        var qOk = (q === '' || title.indexOf(q) !== -1);
+        if (catOk && qOk) { r.style.display = ''; count++; }
+        else { r.style.display = 'none'; }
+      });
+      document.getElementById('noticeCount').textContent = '총 ' + count + '건';
+    }
+  })();
+</script>
+
+</body>
+</html>
